@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RS Trader - Money Management Tool</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+        :root { --bg-dark: #0d0d1a; --bg-card: #1a1a2e; --bg-card-hover: #252542; --bg-input: #0f0f1f; --text-primary: #ffffff; --text-secondary: #8888aa; --accent-purple: #8b5cf6; --accent-cyan: #06d6d6; --accent-pink: #ec4899; --accent-green: #10b981; --accent-red: #ef4444; --accent-orange: #f59e0b; --accent-blue: #3b82f6; --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #06d6d6 100%); --gradient-green: linear-gradient(135deg, #10b981 0%, #06d6d6 100%); --gradient-red: linear-gradient(135deg, #ef4444 0%, #ec4899 100%); --gradient-gold: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); --border-color: #2a2a4a; --glow-purple: 0 0 20px rgba(139, 92, 246, 0.3); --glow-cyan: 0 0 20px rgba(6, 214, 214, 0.3); --glow-green: 0 0 20px rgba(16, 185, 129, 0.3); }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); background-image: radial-gradient(ellipse at 0% 0%, rgba(139, 92, 246, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 100% 100%, rgba(6, 214, 214, 0.1) 0%, transparent 50%); color: var(--text-primary); min-height: 100vh; font-size: 13px; line-height: 1.4; }
+        .app { height: 100vh; display: flex; flex-direction: column; padding: 12px; gap: 12px; }
+        .header { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--glow-purple); }
+        .logo { display: flex; align-items: center; gap: 12px; }
+        .logo-icon { font-size: 28px; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo h1 { font-size: 20px; font-weight: 800; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo-subtitle { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 2px; }
+        .header-stats { display: flex; gap: 20px; }
+        .header-stat { text-align: center; }
+        .header-stat-value { font-size: 18px; font-weight: 700; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header-stat-label { font-size: 9px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
+        .main-container { flex: 1; display: grid; grid-template-columns: 1fr 420px; gap: 12px; min-height: 0; }
+        .trade-table-container { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+        .table-header { padding: 12px 16px; background: linear-gradient(90deg, rgba(139, 92, 246, 0.1), rgba(6, 214, 214, 0.1)); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .table-title { font-size: 14px; font-weight: 700; color: var(--accent-cyan); }
+        .table-scroll { flex: 1; overflow-y: auto; }
+        .trade-table { width: 100%; border-collapse: collapse; }
+        .trade-table th { background: var(--bg-input); padding: 10px 12px; text-align: center; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-purple); position: sticky; top: 0; z-index: 1; }
+        .trade-table td { padding: 8px 12px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .trade-table tbody tr:hover { background: rgba(139, 92, 246, 0.05); }
+        .row-num { color: var(--text-secondary); font-weight: 600; font-size: 12px; }
+        .wl-select { padding: 6px 12px; background: var(--bg-input); border: 2px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 12px; font-weight: 600; cursor: pointer; min-width: 70px; transition: all 0.2s; }
+        .wl-select:hover { border-color: var(--accent-purple); }
+        .wl-select.win { background: var(--gradient-green); border-color: var(--accent-green); color: #000; font-weight: 700; box-shadow: var(--glow-green); }
+        .wl-select.loss { background: var(--gradient-red); border-color: var(--accent-red); color: #fff; font-weight: 700; }
+        .amount-cell { font-weight: 600; color: var(--accent-cyan); }
+        .return-value { font-weight: 700; }
+        .return-value.positive { color: var(--accent-green); }
+        .return-value.negative { color: var(--accent-red); }
+        .balance-cell { font-weight: 700; font-size: 13px; }
+        .balance-cell.highlight { background: var(--gradient-green); color: #000; border-radius: 6px; padding: 4px 8px; box-shadow: var(--glow-green); }
+        .right-panel { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto auto; gap: 10px; overflow-y: auto; }
+        .panel-section { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; transition: all 0.3s; }
+        .panel-section:hover { border-color: var(--accent-purple); box-shadow: var(--glow-purple); }
+        .section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid; display: flex; align-items: center; gap: 6px; }
+        .section-title.purple { color: var(--accent-purple); border-color: var(--accent-purple); }
+        .section-title.cyan { color: var(--accent-cyan); border-color: var(--accent-cyan); }
+        .section-title.green { color: var(--accent-green); border-color: var(--accent-green); }
+        .section-title.red { color: var(--accent-red); border-color: var(--accent-red); }
+        .section-title.gold { color: var(--accent-orange); border-color: var(--accent-orange); }
+        .form-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .form-row:last-child { margin-bottom: 0; }
+        .form-row label { color: var(--text-secondary); font-size: 11px; }
+        .form-row input[type="number"] { width: 80px; padding: 6px 10px; background: var(--bg-input); border: 2px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 12px; font-weight: 600; text-align: right; transition: all 0.2s; -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; }
+        .form-row input[type="number"]:focus { outline: none; border-color: var(--accent-purple); box-shadow: var(--glow-purple); }
+        .value-display { font-weight: 700; font-size: 13px; }
+        .value-display.gain { color: var(--accent-green); }
+        .value-display.loss { color: var(--accent-red); }
+        .value-display.cyan { color: var(--accent-cyan); }
+        .value-display.purple { color: var(--accent-purple); }
+        .value-display.gold { color: var(--accent-orange); }
+        .btn-primary { width: 100%; padding: 10px; margin-top: 10px; background: var(--gradient-primary); border: none; border-radius: 8px; color: #fff; font-weight: 700; font-size: 11px; cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--glow-purple); }
+        .btn-green { background: var(--gradient-green); }
+        .btn-green:hover { box-shadow: var(--glow-green); }
+        .btn-secondary { width: 100%; padding: 8px; margin-top: 6px; background: transparent; border: 2px solid var(--border-color); border-radius: 8px; color: var(--text-secondary); font-weight: 600; font-size: 10px; cursor: pointer; transition: all 0.2s; }
+        .btn-secondary:hover { border-color: var(--accent-red); color: var(--accent-red); }
+        .counter-display { display: flex; justify-content: center; align-items: center; gap: 12px; margin: 8px 0; }
+        .counter-value { font-size: 42px; font-weight: 800; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .counter-buttons { display: flex; flex-direction: column; gap: 4px; }
+        .counter-btn { width: 28px; height: 24px; background: var(--bg-input); border: 2px solid var(--border-color); border-radius: 6px; color: var(--text-secondary); cursor: pointer; font-size: 10px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .counter-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); box-shadow: var(--glow-cyan); }
+        .toggle { position: relative; width: 44px; height: 24px; }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-input); border: 2px solid var(--border-color); border-radius: 24px; transition: 0.3s; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background: var(--text-secondary); border-radius: 50%; transition: 0.3s; }
+        .toggle input:checked + .slider { background: var(--gradient-green); border-color: var(--accent-green); }
+        .toggle input:checked + .slider:before { background: #fff; transform: translateX(20px); }
+        .win-rate-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; padding: 6px 10px; background: rgba(255,255,255,0.02); border-radius: 8px; }
+        .win-rate-row label { color: var(--text-secondary); font-size: 11px; flex: 1; }
+        .win-rate-row .value-display { width: 45px; text-align: right; }
+        .big-stat { text-align: center; padding: 8px; background: rgba(139, 92, 246, 0.1); border-radius: 10px; margin-bottom: 10px; }
+        .big-stat-value { font-size: 24px; font-weight: 800; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .big-stat-label { font-size: 9px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
+        .span-2 { grid-column: span 2; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-input); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: var(--accent-purple); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-cyan); }
+        @media (max-width: 1100px) { .main-container { grid-template-columns: 1fr; } .right-panel { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 800px) { .right-panel { grid-template-columns: 1fr 1fr; } }
+        @keyframes glow-pulse { 0%, 100% { box-shadow: var(--glow-purple); } 50% { box-shadow: var(--glow-cyan); } }
+        .panel-section.active { animation: glow-pulse 2s ease-in-out infinite; }
+    </style>
+</head>
+<body oncontextmenu="return false;" oncopy="return false;" oncut="return false;">
+    <div class="app">
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">💰</span>
+                <div>
+                    <h1>RS Trader - Money Management</h1>
+                    <span class="logo-subtitle">Martingale Strategy Calculator</span>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="header-stat">
+                    <div class="header-stat-value" id="headerBalance">$500.00</div>
+                    <div class="header-stat-label">Current Balance</div>
+                </div>
+                <div class="header-stat">
+                    <div class="header-stat-value" id="headerProfit">$0.00</div>
+                    <div class="header-stat-label">Session Profit</div>
+                </div>
+            </div>
+        </header>
+        <div class="main-container">
+            <div class="trade-table-container">
+                <div class="table-header">
+                    <span class="table-title">📊 Trade Log</span>
+                    <span style="color: var(--text-secondary); font-size: 11px;">Enter W/L for each trade</span>
+                </div>
+                <div class="table-scroll">
+                    <table class="trade-table">
+                        <thead><tr><th>#</th><th>Result</th><th>Amount</th><th>Return</th><th>Balance</th></tr></thead>
+                        <tbody id="tradeTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="right-panel">
+                <div class="panel-section">
+                    <h3 class="section-title purple">⚙️ Settings</h3>
+                    <div class="form-row"><label>Initial Capital</label><input type="number" id="initialCapital" value="500" min="0"></div>
+                    <div class="form-row"><label>Total Trades</label><input type="number" id="totalTrades" value="11" min="1" max="50"></div>
+                    <div class="form-row"><label>Payout %</label><input type="number" id="payoutPercent" value="92" min="1" max="100"></div>
+                    <button class="btn-primary" id="resetBtn">🔄 Reset Session</button>
+                </div>
+                <div class="panel-section">
+                    <h3 class="section-title cyan">🎯 Session Counter</h3>
+                    <div class="counter-display">
+                        <span class="counter-value" id="sessionCounterValue">0</span>
+                        <div class="counter-buttons">
+                            <button class="counter-btn" id="counterUp">▲</button>
+                            <button class="counter-btn" id="counterDown">▼</button>
+                        </div>
+                    </div>
+                    <button class="btn-primary btn-green" id="newSessionBtn">✨ New Session</button>
+                    <button class="btn-secondary" id="clearSessionsBtn">Clear All</button>
+                </div>
+                <div class="panel-section">
+                    <h3 class="section-title green">📈 Session Stats</h3>
+                    <div class="big-stat"><div class="big-stat-value" id="capitalFinal">$500.00</div><div class="big-stat-label">Final Capital</div></div>
+                    <div class="form-row"><label>Account Gain</label><span class="value-display gain" id="accountGain">0.00%</span></div>
+                    <div class="form-row"><label>Win Profit</label><span class="value-display" id="winProfit">$0.00</span></div>
+                    <div class="form-row"><label>Win Rate</label><span class="value-display purple" id="winRateDisplay">0%</span></div>
+                </div>
+                <div class="panel-section">
+                    <h3 class="section-title gold">🏆 Performance</h3>
+                    <div class="win-rate-row"><label>Events Won</label><span class="value-display" id="eventsWon">0</span><span class="value-display gain" id="eventsWonPercent">0%</span></div>
+                    <div class="win-rate-row"><label>Events Lost</label><span class="value-display" id="eventsLost">0</span><span class="value-display loss" id="eventsLostPercent">0%</span></div>
+                </div>
+                <div class="panel-section">
+                    <h3 class="section-title purple">🎚️ Options</h3>
+                    <div class="form-row"><label>Round Amount</label><label class="toggle"><input type="checkbox" id="roundAmount" checked><span class="slider"></span></label></div>
+                    <div class="form-row"><label>Low Trade Amt</label><label class="toggle"><input type="checkbox" id="lowTradeAmt" checked><span class="slider"></span></label></div>
+                </div>
+                <div class="panel-section">
+                    <h3 class="section-title red">🎯 Daily Goals</h3>
+                    <div class="form-row"><label>Profit Target</label><input type="number" id="profitTarget" value="25" min="0"></div>
+                    <div class="form-row"><label>Sessions Req</label><span class="value-display cyan" id="sessionsRequired">-</span></div>
+                    <div class="form-row"><label>Stop Loss</label><span class="value-display loss" id="stopLoss">$400.00</span></div>
+                </div>
+                <div class="panel-section span-2">
+                    <h3 class="section-title green">📊 All Sessions Total</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="win-rate-row"><label>Total Wins</label><span class="value-display" id="totalWinTrades">0</span><span class="value-display gain" id="totalWinPercent">0%</span></div>
+                        <div class="win-rate-row"><label>Total Losses</label><span class="value-display" id="totalLostTrades">0</span><span class="value-display loss" id="totalLostPercent">0%</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    // Anti-debugging and protection
+    (function(){const _0x5a2f=['contextmenu','keydown','devtools-detect','toString','constructor','debugger','apply','prototype','bind','call'];(function(_0x2d8f05,_0x4b81bb){const _0x4d74cb=function(_0x32719f){while(--_0x32719f){_0x2d8f05['push'](_0x2d8f05['shift']());}};_0x4d74cb(++_0x4b81bb);}(_0x5a2f,0x1b3));const _0x4d74=function(_0x2d8f05,_0x4b81bb){_0x2d8f05=_0x2d8f05-0x0;let _0x4d74cb=_0x5a2f[_0x2d8f05];return _0x4d74cb;};document['addEventListener'](_0x4d74('0x5'),function(_0xe3b4e5){_0xe3b4e5['preventDefault']();});document['addEventListener'](_0x4d74('0x6'),function(_0x318c4d){if(_0x318c4d['ctrlKey']&&(_0x318c4d['key']==='u'||_0x318c4d['key']==='s'||_0x318c4d['key']==='i'||_0x318c4d['key']==='j'||_0x318c4d['key']==='c')){_0x318c4d['preventDefault']();return false;}if(_0x318c4d['key']==='F12'){_0x318c4d['preventDefault']();return false;}});setInterval(function(){const _0x1a2b3c=new Date();(function(){})['constructor']('debugger')['call']();},100);})();
+    // Obfuscated Money Management Code
+    eval(function(p,a,c,k,e,d){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--){d[e(c)]=k[c]||e(c)}k=[function(e){return d[e]}];e=function(){return'\\w+'};c=1};while(c--){if(k[c]){p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c])}}return p}('7 B={1i:[],1h(){4.1g();4.1e();4.1d();4.1c()},1g(){5 a=1b.1a(\'19\');m(a){5 b=18.17(a);4.1i=b.1i||[];8.16(\'15\').14=b.13||0}},12(){1b.11(\'19\',18.10({1i:4.1i,13:8.16(\'15\').14}))},1e(){8.16(\'Z\').Y(\'X\',()=>4.1c());8.16(\'W\').Y(\'X\',()=>{4.1d();4.1c()});8.16(\'V\').Y(\'X\',()=>4.1c());8.16(\'U\').Y(\'X\',()=>4.1c());8.16(\'T\').Y(\'X\',()=>4.1c());8.16(\'S\').Y(\'X\',()=>4.1c());8.16(\'R\').Y(\'Q\',()=>4.P());8.16(\'O\').Y(\'Q\',()=>4.N());8.16(\'M\').Y(\'Q\',()=>4.L());8.16(\'K\').Y(\'Q\',()=>4.J(1));8.16(\'I\').Y(\'Q\',()=>4.J(-1))},1d(){5 a=8.16(\'H\');5 b=G(8.16(\'W\').F)||11;a.E=\'\';D(5 i=1;i<=b;i++){5 c=8.C(\'A\');c.E=`<z 7="y-x">${i}</z><z><w 7="v-w" u="v-${i}"><t F="-">-</t><t F="s">r</t><t F="q">p</t></w></z><z 7="o-n" u="o-${i}">-</z><z 7="l-F" u="l-${i}">-</z><z 7="k-n" u="k-${i}">-</z>`;a.j(c);8.16(`v-${i}`).Y(\'X\',e=>4.h(e))}4.1c()},h(a){5 b=a.g;b.f.e(\'d\',\'c\');m(b.F===\'s\')b.f.9(\'d\');6 m(b.F===\'q\')b.f.9(\'c\');4.1c();4.12()},1c(){5 a=G(8.16(\'Z\').F)||1f;5 b=G(8.16(\'V\').F)||1j;5 c=G(8.16(\'W\').F)||11;5 d=G(8.16(\'U\').F)||1k;5 e=8.16(\'T\').1l;5 f=8.16(\'S\').1l;5 g=b/1m;5 h=f?a*0.1n:a*0.1o;m(e)h=1p.1q(h);h=1p.1r(h,f?1:2);5 i=a,j=0,k=0,l=0,n=!1;D(5 o=1;o<=c;o++){5 p=8.16(`v-${o}`);5 q=8.16(`o-${o}`);5 r=8.16(`l-${o}`);5 s=8.16(`k-${o}`);m(!p)1s;5 t=p.F;5 u=n?(l+h)/g:h;m(e)u=1p.1q(u*1m)/1m;u=1p.1r(u,f?1:2);m(t===\'s\'){5 v=u*g;i+=v;j++;q.14=u.1t(2);r.14=\'+\'+v.1t(2);r.f.9(\'1u\');r.f.e(\'1v\');s.14=i.1t(2);s.f.9(\'1w\');l=0;n=!1}6 m(t===\'q\'){i-=u;l+=u;n=!0;k++;q.14=u.1t(2);r.14=\'-\'+u.1t(2);r.f.e(\'1u\');r.f.9(\'1v\');s.14=i.1t(2);s.f.e(\'1w\');1x}6{5 x=n?(l+h)/g:h;m(e)x=1p.1q(x*1m)/1m;x=1p.1r(x,f?1:2);q.14=x.1t(2);r.14=\'-\';r.f.e(\'1u\',\'1v\');s.14=\'-\';s.f.e(\'1w\');1y}}8.16(\'1z\').14=\'$\'+i.1t(2);5 y=i-a;8.16(\'1A\').14=(y>=0?\'+$\':\'-$\')+1p.1B(y).1t(2);8.16(\'1A\').1C.1D=(y>=0?\'1E(--1F-1G)\':\'1E(--1F-1H)\');5 z=j+k;5 A=z>0?(j/z*1m):0;8.16(\'1I\').14=1p.1J(A)+\'%\';8.16(\'1K\').14=\'$\'+i.1t(2);5 B=(i-a)/a*1m;5 C=8.16(\'1L\');C.14=(B>=0?\'+\':\'\')+B.1t(2)+\'%\';C.f.1M(\'1N\',B>=0);C.f.1M(\'c\',B<0);5 D=8.16(\'1O\');D.14=(y>=0?\'+$\':\'-$\')+1p.1B(y).1t(2);D.f.1M(\'1N\',y>=0);D.f.1M(\'c\',y<0);8.16(\'1P\').14=\'$\'+(a*0.8).1t(2);8.16(\'1Q\').14=j;8.16(\'1R\').14=k;8.16(\'1S\').14=(z>0?1p.1J(j/z*1m):0)+\'%\';8.16(\'1T\').14=(z>0?1p.1J(k/z*1m):0)+\'%\';5 E=y>0?y:(a*0.1n);5 F=1p.1q(d/1p.1r(E,0.1o));8.16(\'1U\').14=F>1m?\'∞\':F;4.1V(j,k)},1V(a,b){5 c=a,d=b;4.1i.1W(s=>{c+=s.1X||0;d+=s.1Y||0});8.16(\'1Z\').14=c;8.16(\'20\').14=d;5 e=c+d;8.16(\'21\').14=(e>0?1p.1J(c/e*1m):0)+\'%\';8.16(\'22\').14=(e>0?1p.1J(d/e*1m):0)+\'%\'},P(){5 a=G(8.16(\'W\').F)||11;D(5 i=1;i<=a;i++){5 b=8.16(`v-${i}`);5 c=8.16(`o-${i}`);5 d=8.16(`l-${i}`);5 e=8.16(`k-${i}`);m(b){b.F=\'-\';b.f.e(\'d\',\'c\')}m(c)c.14=\'-\';m(d){d.14=\'-\';d.f.e(\'1u\',\'1v\')}m(e){e.14=\'-\';e.f.e(\'1w\')}}4.1c();4.12()},N(){5 a=G(8.16(\'1Q\').14)||0;5 b=G(8.16(\'1R\').14)||0;5 c=G(8.16(\'1K\').14.23(\'$\',\'\'))||1f;m(a>0||b>0){4.1i.24({1X:a,1Y:b,25:c})}5 d=G(8.16(\'15\').14)||0;8.16(\'15\').14=d+1;8.16(\'Z\').F=1p.1J(c);4.P()},L(){m(26(\'27 28 29 2a?\')){4.1i=[];8.16(\'15\').14=\'0\';4.P();1b.2b(\'19\')}},J(a){5 b=8.16(\'15\');b.14=1p.1r(0,(G(b.14)||0)+a);4.12()}};8.Y(\'2c\',()=>{B.1h()});',62,147,'||||||else|class|document|add|||loss|win|remove|classList|target|onWLChange|||||appendChild|balance|return|if|cell|amount|select|L|WIN|W|option|id|wl|select_|num|row|td|tr|MoneyManagement|createElement|for|innerHTML|value|parseInt|tradeTableBody|counterDown|adjustCounter|counterUp|clearAllSessions|clearSessionsBtn|newSession|newSessionBtn|reset|click|resetBtn|lowTradeAmt|roundAmount|profitTarget|payoutPercent|totalTrades|change|addEventListener|initialCapital||11|saveToStorage|sessionCounterValue|textContent|getElementById|getItem|parse|JSON|rsTraderMoneyManagement|localStorage|updateCalculations|generateTable|bindEvents|500|loadFromStorage|init|sessions|92|25|checked|100|004|01|Math|ceil|max|continue|toFixed|positive|negative|highlight|break|else_cont|headerBalance|headerProfit|abs|style|color|var|accent|green|red|winRateDisplay|round|capitalFinal|accountGain|toggle|gain|winProfit|stopLoss|eventsWon|eventsLost|eventsWonPercent|eventsLostPercent|sessionsRequired|updateTotalStats|forEach|wins|losses|totalWinTrades|totalLostTrades|totalWinPercent|totalLostPercent|replace|push|finalCapital|confirm|Clear|all|session|data|removeItem|DOMContentLoaded'.split('|'),0,{}))
+    </script>
+</body>
+</html>
